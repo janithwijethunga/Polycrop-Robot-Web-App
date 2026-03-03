@@ -16,7 +16,7 @@ export default function RobotCard({ robot, error }) {
   return (
     <section className="rounded-2xl border border-slate-800 bg-slate-900/20 p-4 shadow-sm">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Robot Status</h2>
+        <h2 className="text-lg font-semibold">Robot Current Status</h2>
         <div className="text-xs text-slate-400">
           Doc: <span className="font-mono">robots/{robot?.robotId || "..."}</span>
         </div>
