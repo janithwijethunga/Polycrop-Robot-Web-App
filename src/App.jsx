@@ -17,11 +17,39 @@ export default function App() {
   const [eventsErr, setEventsErr] = useState("");
 
   const [captured, setCaptured] = useState(null);
+  const [inferData, setInferData] = useState(null);
+  const [inferErr, setInferErr] = useState("");
+  const [inferLoading, setInferLoading] = useState(false);
 
-function handleCapture(dataUrl) {
-  setCaptured(dataUrl);
-  // later: upload to Firebase Storage and write to plant.imageUrl
-}
+  async function handleCapture(dataUrl) {
+    setCaptured(dataUrl);
+    setInferData(null);
+    setInferErr("");
+    setInferLoading(true);
+
+    try {
+      const blob = await (await fetch(dataUrl)).blob();
+      const formData = new FormData();
+      formData.append("file", blob, "frame.jpg");
+
+      const res = await fetch("/infer", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error(`Inference request failed (${res.status})`);
+      }
+
+      const data = await res.json();
+      console.log(data);
+      setInferData(data);
+    } catch (err) {
+      setInferErr(err?.message || "Failed to run inference");
+    } finally {
+      setInferLoading(false);
+    }
+  }
 
   const currentRFID = robot?.rfid && robot?.rfid !== "NONE" ? robot.rfid : null;
 
@@ -115,6 +143,21 @@ function handleCapture(dataUrl) {
         <img src={captured} alt="Captured" className="w-full max-h-[420px] object-cover" />
       </div>
     )}
+
+    <div className="mt-3 rounded-lg border border-slate-800 bg-slate-950/40 p-3 text-sm">
+      <div className="font-medium text-slate-200">Inference Result</div>
+      {inferLoading ? (
+        <div className="mt-2 text-slate-300">Running inference...</div>
+      ) : inferErr ? (
+        <div className="mt-2 text-rose-300">{inferErr}</div>
+      ) : inferData ? (
+        <pre className="mt-2 overflow-auto whitespace-pre-wrap text-xs text-slate-200">
+          {JSON.stringify(inferData, null, 2)}
+        </pre>
+      ) : (
+        <div className="mt-2 text-slate-300">No inference result yet.</div>
+      )}
+    </div>
   </section>
 </div>
       </main>
