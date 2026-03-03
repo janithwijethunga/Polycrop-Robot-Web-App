@@ -151,7 +151,7 @@ export default function App() {
           <EventsTable events={events} error={eventsErr} />
         </div>
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-  <CameraPanel onCapture={handleCapture} onFrame={handleFrame} />
+  <CameraPanel onCapture={handleCapture} onFrame={handleFrame} error={inferErr} />
 
   <section className="rounded-2xl border border-slate-800 bg-slate-900/20 p-4 shadow-sm">
     <h2 className="text-lg font-semibold">Captured Image</h2>

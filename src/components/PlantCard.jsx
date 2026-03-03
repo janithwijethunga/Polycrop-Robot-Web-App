@@ -16,7 +16,7 @@ export default function PlantCard({ plant, currentRFID, error }) {
   return (
     <section className="rounded-2xl border border-slate-800 bg-slate-900/20 p-4 shadow-sm">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Plantss</h2>
+        <h2 className="text-lg font-semibold">Plant</h2>
         <div className="text-xs text-slate-400">
           Doc:{" "}
           <span className="font-mono">

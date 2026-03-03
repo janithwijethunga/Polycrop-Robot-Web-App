@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-export default function CameraPanel({ onCapture, onFrame }) {
+export default function CameraPanel({ onCapture, onFrame, error }) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const timerRef = useRef(null);
@@ -22,9 +22,11 @@ export default function CameraPanel({ onCapture, onFrame }) {
         await videoRef.current.play();
       }
       setIsOpen(true);
+      return true;
     } catch (e) {
       setErr(e?.message || "Camera permission denied / not available");
       setIsOpen(false);
+      return false;
     }
   }
 
@@ -39,7 +41,7 @@ export default function CameraPanel({ onCapture, onFrame }) {
     setIsOpen(false);
   }
 
-  function capture() {
+  async function capture() {
     setErr("");
     const video = videoRef.current;
     if (!video) return;
@@ -53,18 +55,25 @@ export default function CameraPanel({ onCapture, onFrame }) {
 
     // JPEG base64
     const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-    onCapture?.(dataUrl);
+    try {
+      await onCapture?.(dataUrl);
+    } catch (e) {
+      setErr(e?.message || "Capture failed");
+    }
   }
 
   async function startAuto() {
     setErr("");
-    if (!isOpen) await openCamera();
+    if (!isOpen) {
+      const opened = await openCamera();
+      if (!opened) return;
+    }
 
     setAuto(true);
 
     if (timerRef.current) clearInterval(timerRef.current);
 
-    timerRef.current = setInterval(() => {
+    timerRef.current = setInterval(async () => {
       const video = videoRef.current;
       if (!video || !onFrame) return;
 
@@ -76,7 +85,11 @@ export default function CameraPanel({ onCapture, onFrame }) {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
       const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
-      onFrame(dataUrl);
+      try {
+        await onFrame(dataUrl);
+      } catch (e) {
+        setErr(e?.message || "Auto scan failed");
+      }
     }, 1000);
   }
 
@@ -141,9 +154,10 @@ export default function CameraPanel({ onCapture, onFrame }) {
         </div>
       </div>
 
-      {err ? (
+      {err || error ? (
         <div className="mt-3 rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-200">
-          {err}
+          {err ? <div>{err}</div> : null}
+          {error ? <div>{error}</div> : null}
         </div>
       ) : null}
 
