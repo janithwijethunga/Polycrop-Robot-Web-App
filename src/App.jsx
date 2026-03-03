@@ -8,6 +8,8 @@ import PlantCard from "./components/PlantCard.jsx";
 import EventsTable from "./components/EventsTable.jsx";
 import CameraPanel from "./components/CameraPanel.jsx";
 
+const INFER_URL = import.meta.env.VITE_INFER_URL || "/infer";
+
 export default function App() {
   const [robot, setRobot] = useState(null);
   const [plant, setPlant] = useState(null);
@@ -32,12 +34,15 @@ export default function App() {
       const formData = new FormData();
       formData.append("file", blob, "frame.jpg");
 
-      const res = await fetch("/infer", {
+      const res = await fetch(INFER_URL, {
         method: "POST",
         body: formData,
       });
 
       if (!res.ok) {
+        if (res.status === 404) {
+          throw new Error(`Inference endpoint not found (404): ${INFER_URL}`);
+        }
         throw new Error(`Inference request failed (${res.status})`);
       }
 

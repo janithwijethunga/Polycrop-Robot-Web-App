@@ -14,3 +14,22 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+## Inference API configuration
+
+The camera capture feature posts the image to `VITE_INFER_URL`.
+
+- Local development: default can be `/infer` when using the Vite proxy.
+- Hosted frontend: set `VITE_INFER_URL` to your real backend endpoint (for example `https://api.yourdomain.com/infer`).
+
+Create `.env` from `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+Then update:
+
+```env
+VITE_INFER_URL=https://api.yourdomain.com/infer
+```
