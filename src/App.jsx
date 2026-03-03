@@ -6,6 +6,7 @@ import Header from "./components/Header.jsx";
 import RobotCard from "./components/RobotCard.jsx";
 import PlantCard from "./components/PlantCard.jsx";
 import EventsTable from "./components/EventsTable.jsx";
+import CameraPanel from "./components/CameraPanel.jsx";
 
 export default function App() {
   const [robot, setRobot] = useState(null);
@@ -14,6 +15,13 @@ export default function App() {
   const [robotErr, setRobotErr] = useState("");
   const [plantErr, setPlantErr] = useState("");
   const [eventsErr, setEventsErr] = useState("");
+
+  const [captured, setCaptured] = useState(null);
+
+function handleCapture(dataUrl) {
+  setCaptured(dataUrl);
+  // later: upload to Firebase Storage and write to plant.imageUrl
+}
 
   const currentRFID = robot?.rfid && robot?.rfid !== "NONE" ? robot.rfid : null;
 
@@ -93,6 +101,22 @@ export default function App() {
         <div className="mt-6">
           <EventsTable events={events} error={eventsErr} />
         </div>
+        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+  <CameraPanel onCapture={handleCapture} />
+
+  <section className="rounded-2xl border border-slate-800 bg-slate-900/20 p-4 shadow-sm">
+    <h2 className="text-lg font-semibold">Captured Image</h2>
+    {!captured ? (
+      <div className="mt-3 rounded-lg border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-300">
+        No image captured yet.
+      </div>
+    ) : (
+      <div className="mt-3 overflow-hidden rounded-xl border border-slate-800 bg-slate-950/40">
+        <img src={captured} alt="Captured" className="w-full max-h-[420px] object-cover" />
+      </div>
+    )}
+  </section>
+</div>
       </main>
 
       <footer className="border-t border-slate-800/60">
