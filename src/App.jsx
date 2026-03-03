@@ -8,7 +8,7 @@ import PlantCard from "./components/PlantCard.jsx";
 import EventsTable from "./components/EventsTable.jsx";
 import CameraPanel from "./components/CameraPanel.jsx";
 
-const INFER_URL = import.meta.env.VITE_INFER_URL || "http://localhost:8000/infer";
+const INFER_URL = import.meta.env.VITE_INFER_URL || "https://0a36-223-224-21-73.ngrok-free.app/infer";
 
 export default function App() {
   const [robot, setRobot] = useState(null);
