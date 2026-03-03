@@ -17,19 +17,7 @@ If you are developing a production application, we recommend using TypeScript wi
 
 ## Inference API configuration
 
-The camera capture feature posts the image to `VITE_INFER_URL`.
+The camera capture feature posts the image to `INFER_URL` configured in `src/App.jsx`.
 
-- Local development: default can be `/infer` when using the Vite proxy.
-- Hosted frontend: set `VITE_INFER_URL` to your real backend endpoint (for example `https://api.yourdomain.com/infer`).
-
-Create `.env` from `.env.example`:
-
-```bash
-cp .env.example .env
-```
-
-Then update:
-
-```env
-VITE_INFER_URL=https://api.yourdomain.com/infer
-```
+- Local development: uses `/infer` (through Vite proxy).
+- Hosted frontend: update `PROD_INFER_URL` in `src/App.jsx` to your real backend endpoint (for example `https://api.yourdomain.com/infer`).
