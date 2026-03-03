@@ -22,37 +22,53 @@ export default function App() {
   const [inferData, setInferData] = useState(null);
   const [inferErr, setInferErr] = useState("");
   const [inferLoading, setInferLoading] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function sendFrame(dataUrl) {
+    const blob = await (await fetch(dataUrl)).blob();
+    const formData = new FormData();
+    formData.append("file", blob, "frame.jpg");
+
+    const res = await fetch(INFER_URL, { method: "POST", body: formData });
+    if (!res.ok) throw new Error(`Inference request failed (${res.status})`);
+    return await res.json();
+  }
 
   async function handleCapture(dataUrl) {
+    if (busy) return;
+    setBusy(true);
+
     setCaptured(dataUrl);
-    setInferData(null);
     setInferErr("");
     setInferLoading(true);
 
     try {
-      const blob = await (await fetch(dataUrl)).blob();
-      const formData = new FormData();
-      formData.append("file", blob, "frame.jpg");
-
-      const res = await fetch(INFER_URL, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        if (res.status === 404) {
-          throw new Error(`Inference endpoint not found (404): ${INFER_URL}`);
-        }
-        throw new Error(`Inference request failed (${res.status})`);
-      }
-
-      const data = await res.json();
-      console.log(data);
+      const data = await sendFrame(dataUrl);
       setInferData(data);
     } catch (err) {
       setInferErr(err?.message || "Failed to run inference");
     } finally {
       setInferLoading(false);
+      setBusy(false);
+    }
+  }
+
+  async function handleFrame(dataUrl) {
+    if (busy) return;
+    setBusy(true);
+
+    setCaptured(dataUrl);
+    setInferErr("");
+    setInferLoading(true);
+
+    try {
+      const data = await sendFrame(dataUrl);
+      setInferData(data);
+    } catch (err) {
+      setInferErr(err?.message || "Failed to run inference");
+    } finally {
+      setInferLoading(false);
+      setBusy(false);
     }
   }
 
@@ -135,7 +151,7 @@ export default function App() {
           <EventsTable events={events} error={eventsErr} />
         </div>
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-  <CameraPanel onCapture={handleCapture} />
+  <CameraPanel onCapture={handleCapture} onFrame={handleFrame} />
 
   <section className="rounded-2xl border border-slate-800 bg-slate-900/20 p-4 shadow-sm">
     <h2 className="text-lg font-semibold">Captured Image</h2>

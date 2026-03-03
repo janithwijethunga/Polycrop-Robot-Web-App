@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 
-export default function CameraPanel({ onCapture }) {
+export default function CameraPanel({ onCapture, onFrame }) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+  const timerRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [auto, setAuto] = useState(false);
   const [err, setErr] = useState("");
 
   async function openCamera() {
@@ -27,6 +29,7 @@ export default function CameraPanel({ onCapture }) {
   }
 
   function closeCamera() {
+    stopAuto();
     const s = streamRef.current;
     if (s) {
       s.getTracks().forEach((t) => t.stop());
@@ -53,8 +56,41 @@ export default function CameraPanel({ onCapture }) {
     onCapture?.(dataUrl);
   }
 
+  async function startAuto() {
+    setErr("");
+    if (!isOpen) await openCamera();
+
+    setAuto(true);
+
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    timerRef.current = setInterval(() => {
+      const video = videoRef.current;
+      if (!video || !onFrame) return;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+      onFrame(dataUrl);
+    }, 1000);
+  }
+
+  function stopAuto() {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = null;
+    setAuto(false);
+  }
+
   useEffect(() => {
-    return () => closeCamera(); // cleanup when component unmounts
+    return () => {
+      stopAuto();
+      closeCamera();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -79,6 +115,21 @@ export default function CameraPanel({ onCapture }) {
               >
                 Capture
               </button>
+              {!auto ? (
+                <button
+                  onClick={startAuto}
+                  className="rounded-lg bg-sky-500/20 px-3 py-2 text-sm font-semibold text-sky-200 border border-sky-500/30 hover:bg-sky-500/25"
+                >
+                  Auto Scan (1s)
+                </button>
+              ) : (
+                <button
+                  onClick={stopAuto}
+                  className="rounded-lg bg-amber-500/20 px-3 py-2 text-sm font-semibold text-amber-200 border border-amber-500/30 hover:bg-amber-500/25"
+                >
+                  Stop Auto
+                </button>
+              )}
               <button
                 onClick={closeCamera}
                 className="rounded-lg bg-rose-500/20 px-3 py-2 text-sm font-semibold text-rose-200 border border-rose-500/30 hover:bg-rose-500/25"
